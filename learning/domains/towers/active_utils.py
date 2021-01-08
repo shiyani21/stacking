@@ -167,7 +167,8 @@ def get_sequential_predictions(dataset, ensemble):
     """
     Make a separate prediction for each of the sub-towers in a tower.
     Return stable only if all sub-towers are stable. This is for the
-    model that assumes the base of each tower is stable.
+    model that assumes the base of each tower is stable. This is used
+    in evaluation. get_predictions should still be used for acquisition.
     """
     preds = []
     # Create TowerDataset object.
@@ -195,7 +196,7 @@ def get_sequential_predictions(dataset, ensemble):
         #print(preds[-1].shape)
     return torch.cat(preds, dim=0)
 
-def get_predictions(dataset, ensemble):
+def get_predictions(dataset, ensemble, ret_nodewise=False):
     """
     :param dataset: A tower_dict structure.
     :param ensemble: The Ensemble model which to use for predictions.
@@ -216,7 +217,9 @@ def get_predictions(dataset, ensemble):
         if torch.cuda.is_available():
             tensor = tensor.cuda()
         with torch.no_grad():
-            preds.append(ensemble.forward(tensor))
+            preds.append(ensemble.forward(tensor, ret_nodewise))
+    if ret_nodewise:
+        return preds
     return torch.cat(preds, dim=0)
 
 

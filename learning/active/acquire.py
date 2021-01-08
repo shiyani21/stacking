@@ -21,6 +21,25 @@ def bald(predictions, eps=1e-5):
 
     return bald
 
+def nodewise_bald(predictions):
+    """ Calculate the BALD score for each node of the graph network. Then average 
+    across nodes to get the BALD score for the complete tower.
+    :param predictions: List of length N where each element is a n x B x K matrix.
+    n is minibatch size and N is number of minibatches. B may differ across lists.
+    """
+    bald_scores = []
+    for K in range(2, 6):
+        single_size_preds = [p for p in predictions if p.shape[1] == K]
+        if len(single_size_preds) > 0:
+            single_size_preds = torch.cat(single_size_preds, dim=0)
+            N, B, K = single_size_preds.shape
+            bald_per_node = bald(single_size_preds.view(N*B, K))
+            tower_bald = bald_per_node.view(N, B).mean(dim=1)
+            bald_scores.append(tower_bald)
+
+    bald_scores = torch.cat(bald_scores)
+    return bald_scores
+
 def choose_acquisition_data(samples, ensemble, n_acquire, strategy, data_pred_fn, data_subset_fn):
     """ Choose data points with the highest acquisition score
     :param samples: (N,2) An array of unlabelled datapoints which to evaluate.
@@ -32,11 +51,11 @@ def choose_acquisition_data(samples, ensemble, n_acquire, strategy, data_pred_fn
     :return: (n_acquire, 2) - the samples which to label.
     """
     # Get predictions for each model of the ensemble. 
-    preds = data_pred_fn(samples, ensemble)
+    preds = data_pred_fn(samples, ensemble, ret_nodewise=True)
 
     # Get the acquisition score for each.
     if strategy == 'bald':
-        scores = bald(preds).cpu().numpy()
+        scores = nodewise_bald(preds).cpu().numpy()
     elif strategy == 'random':
         scores = np.random.uniform(size=preds.shape[0]).astype('float32')
         

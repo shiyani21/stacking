@@ -35,14 +35,14 @@ class Ensemble(nn.Module):
         """ Initialize (or re-initialize) all the models in the ensemble."""
         self.models = nn.ModuleList([self.base_model(**self.base_args) for _ in range(self.n_models)])
 
-    def forward(self, x):
+    def forward(self, x, ret_nodewise=False):
         """ Return a prediction for each model in the ensemble.
         :param x: (N, *) Input tensor compatible with the base_model.
         :return: (N, n_models), class prediction for each model.
         """
-        preds = [self.models[ix].forward(x) for ix in range(self.n_models)]
-        return torch.cat(preds, dim=1)
-
+        preds = [self.models[ix].forward(x, ret_nodewise) for ix in range(self.n_models)]
+        preds = torch.cat(preds, dim=-1)
+        return preds
 
 # Test creation of an ensemble.
 if __name__ == '__main__':

@@ -84,7 +84,7 @@ class FCGN(nn.Module):
         x = x.view(N, K, self.n_hidden)
         return x
 
-    def forward(self, towers):
+    def forward(self, towers, ret_nodepreds=False):
         """
         :param towers: (N, K, n_in) tensor describing the tower.
         :param k: Number of times to iterate the graph update.
@@ -102,10 +102,13 @@ class FCGN(nn.Module):
             # Perform node update.
             h = self.node_fn(towers, h, e)
             
-        # Calculate output predictions.
-        x = torch.mean(h, dim=1)
-        x = self.O(x).view(N)
-        return torch.sigmoid(x).unsqueeze(-1)
+        # Calculate output predictions.        
+        x = self.O(h)
+        node_preds = torch.sigmoid(x)
+        global_pred = node_preds.prod(dim=1)
+        if ret_nodepreds:
+            return node_preds
+        return global_pred
 
 
 class ConstructableFCGN(nn.Module):
