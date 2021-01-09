@@ -46,7 +46,12 @@ class FCGN(nn.Module):
         # xx.shape = (N, K, K, 2*n_in)
         x = towers 
         x = x[:, :, None, :].expand(N, K, K, self.n_in)
+
         xx = torch.cat([x, x.transpose(1, 2)], dim=3)
+        for b1x in range(0, K):
+            #print(xx[:, b1x, :, 7:9].shape, xx[:, b1x, b1x:(b1x+1), 7:9].shape)
+            xx[:, b1x, :, 7:9] -= xx[:, b1x, b1x:(b1x+1), 7:9]
+
         xx = xx.view(-1, 2*self.n_in)
 
         # Calculate the edge features for each node 
