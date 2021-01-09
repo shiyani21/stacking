@@ -73,7 +73,6 @@ class FCGN(nn.Module):
         :param e: Node edge features (N, K, n_hidden)
         """
         N, K, _ = towers.shape
-
         # Concatenate all relevant inputs.
         #x = torch.cat([h, e], dim=2)
         x = torch.cat([towers, e], dim=2)
@@ -103,8 +102,11 @@ class FCGN(nn.Module):
             h = self.node_fn(towers, h, e)
             
         # Calculate output predictions.        
-        x = self.O(h)
+        x = self.O(h[:, :-1, :])
         node_preds = torch.sigmoid(x)
+        # import numpy as np
+        # print(node_preds.shape)
+        # print(np.round(node_preds[0,:,:].detach().cpu().numpy(), 2))
         global_pred = node_preds.prod(dim=1)
         if ret_nodepreds:
             return node_preds

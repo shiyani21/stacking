@@ -28,7 +28,7 @@ def nodewise_bald(predictions):
     n is minibatch size and N is number of minibatches. B may differ across lists.
     """
     bald_scores = []
-    for K in range(2, 6):
+    for K in range(1, 5):
         single_size_preds = [p for p in predictions if p.shape[1] == K]
         if len(single_size_preds) > 0:
             single_size_preds = torch.cat(single_size_preds, dim=0)
