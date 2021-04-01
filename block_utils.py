@@ -117,9 +117,21 @@ class Object:
         Returns:
             Object -- a random object
         """
+<<<<<<< Updated upstream
         # blocks range in size based on the dimension range specified
         dim_diff = dim_range[1] - dim_range[0]
         dims = Dimensions(*(np.random.rand(3) * dim_diff + dim_range[0]))
+=======
+<<<<<<< HEAD
+        # blocks range in size from 0.1 to 1
+        #SJP fix this to have 6*10*10 blocks
+        dims = Dimensions(*(np.random.rand(3) * 0.1 + 0.05))
+=======
+        # blocks range in size based on the dimension range specified
+        dim_diff = dim_range[1] - dim_range[0]
+        dims = Dimensions(*(np.random.rand(3) * dim_diff + dim_range[0]))
+>>>>>>> d222428667d8513418532474c9f61d536ad03019
+>>>>>>> Stashed changes
         # pick a density and multiply by the volume to get mass
         density = np.random.rand() * 0.9 + 0.1
         mass = np.random.uniform(0.1, 1.0)
@@ -537,6 +549,7 @@ def rotation_group():
         for r in [0, np.pi/2]:
             v[0] = r
             yield R.from_euler('zyx', v)
+<<<<<<< Updated upstream
 
 ROTATIONS = list(all_rotations())
 QUATERNIONS = [Quaternion(*o.as_quat()) for o in ROTATIONS]
@@ -544,21 +557,67 @@ QUATERNIONS = [Quaternion(*o.as_quat()) for o in ROTATIONS]
 def get_adversarial_blocks(num_blocks=4):
     b1 = Object(name='obj_0',
                 dimensions=Dimensions(0.02, 0.1, 0.02),
+=======
+<<<<<<< HEAD
+#this is the one which is being called so why then other blocks
+def get_adversarial_blocks(num_blocks=4):
+    b1 = Object(name='block_sjp',
+                dimensions=Dimensions(0.06, 0.1, 0.06),
+=======
+
+ROTATIONS = list(all_rotations())
+QUATERNIONS = [Quaternion(*o.as_quat()) for o in ROTATIONS]
+
+def get_adversarial_blocks(num_blocks=4):
+    b1 = Object(name='obj_0',
+                dimensions=Dimensions(0.02, 0.1, 0.02),
+>>>>>>> d222428667d8513418532474c9f61d536ad03019
+>>>>>>> Stashed changes
                 mass=1.,
                 com=Position(0.0075, 0.0475, 0),
                 color=Color(0, 0, 1))
+<<<<<<< Updated upstream
     b2 = Object(name='obj_1',
                 dimensions=Dimensions(0.02, 0.1, 0.02),
+=======
+<<<<<<< HEAD
+    b2 = Object(name='block2',
+                dimensions=Dimensions(0.06, 0.1, 0.06),
+=======
+    b2 = Object(name='obj_1',
+                dimensions=Dimensions(0.02, 0.1, 0.02),
+>>>>>>> d222428667d8513418532474c9f61d536ad03019
+>>>>>>> Stashed changes
                 mass=1.,
                 com=Position(-0.0075, -0.0475, 0),
                 color=Color(1, 0, 1))
+<<<<<<< Updated upstream
     b3 = Object(name='obj_2',
                 dimensions=Dimensions(0.04, 0.12, 0.04),
+=======
+<<<<<<< HEAD
+    b3 = Object(name='block3',
+                dimensions=Dimensions(0.06, 0.10, 0.06),
+=======
+    b3 = Object(name='obj_2',
+                dimensions=Dimensions(0.04, 0.12, 0.04),
+>>>>>>> d222428667d8513418532474c9f61d536ad03019
+>>>>>>> Stashed changes
                 mass=1.,
                 com=Position(0, 0.05, 0.),
                 color=Color(0, 1, 1))
+<<<<<<< Updated upstream
     b4 = Object(name='obj_3',
                 dimensions=Dimensions(0.12, 0.02, 0.04),
+=======
+<<<<<<< HEAD
+    b4 = Object(name='block4',
+                dimensions=Dimensions(0.06, 0.10, 0.06),
+=======
+    b4 = Object(name='obj_3',
+                dimensions=Dimensions(0.12, 0.02, 0.04),
+>>>>>>> d222428667d8513418532474c9f61d536ad03019
+>>>>>>> Stashed changes
                 mass=1.,
                 com=Position(-0.0575, 0, -0.008),
                 color=Color(0, 1, 0))
