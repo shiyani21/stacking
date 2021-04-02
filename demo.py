@@ -11,6 +11,7 @@ import pybullet_data
 import time
 from PIL import Image
 import matplotlib.pyplot as plt
+from scipy.spatial.transform import Rotation as R
 
 def sort(array,array1,var):
     n = len(array)
@@ -52,27 +53,22 @@ def sort(array,array1,var):
 
     return array
 
-<<<<<<< Updated upstream
-def read_obj(path, decompose=True):
-=======
 def get_transform(view_mat,projection_mat,model_mat,vertex_points,transfrom_list):
-    pv = np.matmul(projection_mat,view_mat)
-        #print(pv)
+    pv = np.matmul(projection_mat,view_mat) 
     mvp = np.matmul(pv,model_mat)
+    vertex_points = np.array(vertex_points)
     val = vertex_points.shape[0]
     add_1 = np.ones((val,1))
     vertex_points =np.append(vertex_points, add_1, axis=1)
-        #print(mvp)
-    #print("this is the shape of vertes",np.shape(vertex_points))
+        
     for i in range(len(vertex_points)):
-        #print("vertex point i",vertex_points[i])
+        
         transfrom = np.matmul(mvp,vertex_points[i])
         transfrom_list.append(transfrom)
 
     return transfrom_list
 
 def read_obj(path,decompose=True):
->>>>>>> Stashed changes
     mesh = Mesh([], [])
     meshes = {}
     vertices = []
@@ -101,13 +97,8 @@ def read_obj(path,decompose=True):
         mesh.vertices[:] = [vertices[i] for i in indices]
         new_index_from_old = {i2: i1 for i1, i2 in enumerate(indices)}
         mesh.faces[:] = [tuple(new_index_from_old[i1] for i1 in face) for face in mesh.faces]
-<<<<<<< Updated upstream
     
-    return meshes
-=======
-        #print("trying something ",vertices)
     return meshes,vertices,faces
->>>>>>> Stashed changes
 
 
 def transform_obj_file(obj_string, transformation):
@@ -147,6 +138,8 @@ def main():
     array_x = []
     array_y = []
 
+    tf_list =[]
+
     x_prev = 0
     y_prev = 0
     z_pos = .69
@@ -163,7 +156,7 @@ def main():
     Mesh = namedtuple('Mesh', ['vertices', 'faces'])
 
     #number of runs
-    for i in range(6):
+    for i in range(2):
         x_pos=random.uniform(-0.65,.75) 
         y_pos=random.uniform(-0.45,0.4)
         z_pos = .69
@@ -185,32 +178,22 @@ def main():
         random_roll = random.randint(0,2)
         cubeStartPos = [final_x_array[i],array_y[i],array_z[i]]
         cubeStartOrientation = p.getQuaternionFromEuler([face_pos_pitch[random_pitch],face_pos_roll[random_roll],random_int])
-<<<<<<< Updated upstream
-        cube = p.loadURDF("/home/shiyani/stacking/deform/src/geo/cube_10_6_6.urdf",cubeStartPos,cubeStartOrientation,useMaximalCoordinates=maximalCoordinates,flags=p.URDF_USE_MATERIAL_COLORS_FROM_MTL)
-        path = "/home/shiyani/stacking/deform/src/geo/cube_10_6_6.obj"
+        cube = p.loadURDF("/home/shiyani/stacking/deform/src/geo/cube_obj/cube_10_6_6.urdf",cubeStartPos,cubeStartOrientation,useMaximalCoordinates=maximalCoordinates,flags=p.URDF_USE_MATERIAL_COLORS_FROM_MTL)
+        path = "/home/shiyani/stacking/deform/src/geo/cube_obj/cube_10_6_6.obj"
         list_mesh = read_obj(path, decompose=True)
         cubePos, cubeOrn = p.getBasePositionAndOrientation(cube)
         euler = p.getEulerFromQuaternion(cubeOrn)
-=======
-        #cube = p.loadURDF("/home/shiyani/stacking/deform/src/geo/final_cube.urdf",cubeStartPos,cubeStartOrientation,useMaximalCoordinates=maximalCoordinates,flags=p.URDF_USE_MATERIAL_COLORS_FROM_MTL)
-        cube = p.loadURDF("/home/shiyani/stacking/models/Cube_Wired.urdf",cubeStartPos,cubeStartOrientation,useMaximalCoordinates=maximalCoordinates,flags=p.URDF_USE_MATERIAL_COLORS_FROM_MTL)
-        print("the cube has been loaded")
-        path = "/home/shiyani/stacking/models/Cube_Wired.obj"
-        #path = "/home/shiyani/stacking/deform/src/geo/final_cube.obj"
-        list_mesh,vertices_list,face_list = read_obj(path, decompose=True)
-        vertices_list = np.array(vertices_list)
-        cubePos, cubeOrn = p.getBasePositionAndOrientation(cube)
-        euler = p.getEulerFromQuaternion(cubeOrn)
-        #print(vertices_list[i].shape)
->>>>>>> Stashed changes
-        #print(cubePos,cubeOrn)
-        print("these are the quaternion ",cubeOrn)
-        print("these are the euler",euler)
-        print("this is list of vertices",list_mesh)
-        
-        # print("the cube has been loaded, ",i)
-        # print("this is using the getmesh function")
-        #print(p.getMeshData(cube, linkIndex = 0))
+        rot = R.from_quat(cubeStartOrientation)
+        rot_mat = rot.as_matrix()
+        rot_mat = rot_mat.round(decimals=2, out=None)
+        translation = np.array(cubeStartPos).reshape(3,1)
+        extra = np.array([[0, 0, 0, 1]], dtype=np.float32)
+        model = np.concatenate((np.concatenate((rot_mat, translation), axis=1),extra),axis =0)
+        #np.concatenate( (np.concatenate((R1, T1), axis=1), a), axis=0 ) 
+        #print(model)
+
+        #print(rot_mat)
+       
   
        
 
@@ -219,8 +202,6 @@ def main():
     
     
     ########################################################################################################################################################################################
-        #
-        #p.setRealTimeSimulation(1)
 
         p.resetDebugVisualizerCamera( cameraDistance=3, cameraYaw=0, cameraPitch=-45, cameraTargetPosition=[0,0,0])
         viewMatrix = p.computeViewMatrix(
@@ -233,6 +214,33 @@ def main():
         aspect=1.0,
         nearVal=0.1,
         farVal=3.1)
+        
+        #transformation stuff
+
+        #print("this is the view space: ")
+        
+        view_new = np.reshape(viewMatrix,(4,4))
+        view = view_new.transpose()
+        #print(view)
+        #print("this is the projection matrix:")
+        projection_new =np.reshape(projectionMatrix,(4,4))
+       
+        projection = projection_new.transpose()
+        projection = projection_new
+        #print(projection_new)
+        #focal_length = 
+        #print("the transformation shoudl look like")
+        
+        #i have no clue what i am doingc
+        meshes,vertices_list,faces = read_obj(path,decompose=True)
+        #print(vertices_list)
+        # vertices_list = np.array(vertices_list)
+
+        transform = get_transform(view,projection,model,vertices_list,tf_list)
+        for i in range(len(transform)):
+            print("the transfroms for vertices are",transform[i])
+
+        #######################################################################################################################################
 
         width, height, rgbImg, depthImg, segImg = p.getCameraImage(
         width=224, 
@@ -253,28 +261,7 @@ def main():
                         shadow=True,
                         renderer=p.ER_TINY_RENDERER)
     
-<<<<<<< Updated upstream
     #i have no clue what i am doing
-=======
-        #print("this is the view space: ")
-        
-        view_new = np.reshape(viewMatrix,(4,4))
-        view = view_new.transpose()
-        #print(view)
-        #print("this is the projection matrix:")
-        projection_new =np.reshape(projectionMatrix,(4,4))
-       
-        projection = projection_new.transpose()
-        #print(projection)
-        #print("the transformation shoudl look like")
-        
-    #i have no clue what i am doingc
-
-        transform = get_transform(view,projection,model,vertices_list,tf_list)
-        # for i in range(len(transform)):
-        #     print("the transfroms for vertices are",transform[i])
-
->>>>>>> Stashed changes
         width = 224
         height = 224
         nearVal=0.1
@@ -282,8 +269,7 @@ def main():
         
         depth_buffer_tiny = np.reshape(images[3], [width, height])
         depth_tiny = farVal * nearVal / (farVal - (farVal - nearVal) * depth_buffer_tiny)
-        # rgb_tiny = np.reshape(images[2], (height, width, 4)) * 1. / 255.
-        # seg_tiny = np.reshape(images[4], [width, height]) * 1. / 255.
+    
         rgb_tiny = np.reshape(images[2], (height, width, 4)) * 1
         seg_tiny = np.reshape(images[4], [width, height]) * 1. 
 
@@ -291,7 +277,7 @@ def main():
         plt.imshow(rgb_tiny)
         plt.savefig("/home/shiyani/stacking/Image/rgb/image_%d.png" % i)
         plt.title('rgb Tiny')
-        print("save it")
+        
         #plt show for depth image
         plt.imshow(depth_tiny)
         plt.savefig("/home/shiyani/stacking/Image/depth/image_%d.png" % i)
@@ -304,34 +290,6 @@ def main():
     #renderer=p.ER_TINY_RENDERER)
     
     ###################################################################################################################################################
-        
-        
-    # # RGB Images
-    #     image_array = np.asarray(rgbImg)
-    #     image_rgb = Image.fromarray(image_array.astype('uint8'))
-    #     # Depth Images
-    #     image_array = np.asarray(depthImg)
-    #     image_depth = Image.fromarray(image_array.astype('uint8'))
-    #     # Seg Images
-    #     image_array = np.asarray(segImg)
-    #     print("///////////////////////////////////////////////////////////////////////")
-    #     #print(image_array)
-    #     print("type",image_array.dtype)
-    #     print("np unique", np.unique(image_array))
-    #     print("np where",np.where(image_array > 33554434))
-    #     print(np.amax(image_array))
-    #     print(np.amin(image_array))
-    #     image_seg = Image.fromarray(image_array.astype('uint8'))
-    #     plt.imshow(image_seg)
-    #     plt.savefig("/home/shiyani/stacking/Image/seg/image_%d.png" % i)
-    #     #print(np.amax(image_seg))
-    #     # Saving Images
-    #     #image_seg.save("/home/shiyani/stacking/Image/seg/image_%d.png" % i)
-        
-    #     print("printing seg image!: /home/shiyani/stacking/Image/seg/image_%d.png" % i)
-    #     image_rgb.save("/home/shiyani/stacking/Image/rgb/image_%d.png" % i)
-    #     image_depth.save("/home/shiyani/stacking/Image/depth/image_%d.png" % i)
-
 
     time.sleep(10)
 if __name__ == '__main__':
